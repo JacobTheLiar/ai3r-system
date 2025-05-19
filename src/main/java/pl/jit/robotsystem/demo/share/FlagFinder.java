@@ -13,7 +13,7 @@ public class FlagFinder {
         if (string == null || string.isEmpty()) {
             return false;
         }
-        Pattern pattern = Pattern.compile("\\{\\{FLG:([^}]*)\\}\\}");
+        Pattern pattern = Pattern.compile("\\{\\{FLG:([^}]*)}}");
         Matcher matcher = pattern.matcher(string);
         if (!matcher.find()) {
             return false;

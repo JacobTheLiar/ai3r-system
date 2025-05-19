@@ -39,7 +39,6 @@ public class VoiceService implements No5Action {
     }
 
 
-    @SuppressWarnings("SpellCheckingInspection")
     public void action() {
         log.info("Downloading voice from %s...".formatted("c3ntrala"));
 
