@@ -85,6 +85,23 @@ public class OpenAiService {
                 .orElseGet(Collections::emptyList);
     }
 
+    public ImageGenerationResponse generateImage(String prompt) {
+        return openaiWebClient.post()
+                .uri("/images/generations")
+                .bodyValue(ImageGenerationRequest.builder()
+                        .prompt(prompt)
+                        .model("dall-e-3")
+                        .n(1)
+                        .size("1024x1024")
+                        .quality("hd")
+                        .style("natural") //vivid
+                        .build())
+                .retrieve()
+                .bodyToMono(ImageGenerationResponse.class)
+                .timeout(ofSeconds(30))
+                .block();
+    }
+
     private  <T> T mapToObject(String value, Class<T> responseClass){
         try {
             return objectMapper.readValue(value, responseClass);
