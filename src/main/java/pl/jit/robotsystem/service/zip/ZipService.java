@@ -18,17 +18,16 @@ import java.util.zip.ZipFile;
 @Log
 public class ZipService {
 
-    public List<File> unzipFile(File zipFile) {
-        Path targetDir = zipFile.toPath().getParent();
+    public List<File> unzipFile(File zipFile, String outputDir) {
+        Path targetDir = zipFile.toPath().getParent().resolve(outputDir);
         log.info("Unzipping %s to %s".formatted(zipFile.getName(), targetDir));
-
         try (ZipFile zip = new ZipFile(zipFile)) {
+            Files.createDirectories(targetDir);
             return zip.stream()
                     .peek(entry -> log.fine("Processing: " + entry.getName()))
                     .map(entry -> extractEntry(zip, entry, targetDir))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .peek(file -> log.info("Extracted: " + file.getName()))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             log.severe("Error while unzipping: " + e.getMessage());
@@ -36,14 +35,17 @@ public class ZipService {
         }
     }
 
+    public List<File> unzipFile(File zipFile) {
+        return unzipFile(zipFile, ".");
+    }
+
+
     private Optional<File> extractEntry(ZipFile zip, ZipEntry entry, Path targetDir) {
         try {
             Path entryPath = targetDir.resolve(entry.getName());
-
             if (!entryPath.normalize().startsWith(targetDir.normalize())) {
                 throw new SecurityException("Attempt to extract outside target directory: " + entry.getName());
             }
-
             if (entry.isDirectory()) {
                 Files.createDirectories(entryPath);
                 return Optional.empty();

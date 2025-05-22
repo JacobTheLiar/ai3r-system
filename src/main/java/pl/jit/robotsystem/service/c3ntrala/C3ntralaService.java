@@ -1,5 +1,7 @@
 package pl.jit.robotsystem.service.c3ntrala;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,12 +29,14 @@ public class C3ntralaService {
     private final WebClient webClient;
     private final String ai3rApiKey;
     private final File workingDirectory;
+    private final ObjectMapper objectMapper;
 
 
-    public C3ntralaService(@Qualifier("c3ntralaApiClient") WebClient webClient, Dotenv dotenv, File workingDirectory) {
+    public C3ntralaService(@Qualifier("c3ntralaApiClient") WebClient webClient, Dotenv dotenv, File workingDirectory, ObjectMapper objectMapper) {
         this.webClient = webClient;
         this.ai3rApiKey = dotenv.get(AI3R_API_KEY);
         this.workingDirectory = workingDirectory;
+        this.objectMapper = objectMapper;
     }
 
     public <RESPONSE> Optional<RESPONSE> getData(String filename, Class<RESPONSE> responseType) {
@@ -49,8 +53,12 @@ public class C3ntralaService {
 
     public <RESPONSE, REPORT> Optional<RESPONSE> report(String task, REPORT reportData, Class<RESPONSE> responseType) {
         log.info("Sending report [%s] to c3ntrala...".formatted(task));
-        log.info("Report data: %s".formatted(reportData));
         ReportModel<REPORT> censoredData = new ReportModel<>(task, ai3rApiKey, reportData);
+        try {
+            log.info(" - data: \n%s".formatted(objectMapper.writeValueAsString(censoredData)));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         RESPONSE response = webClient.post()
                 .uri(REPORT_URL)
                 .bodyValue(censoredData)

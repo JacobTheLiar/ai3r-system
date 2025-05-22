@@ -11,7 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -46,11 +50,12 @@ public class OpenAiService {
                 .stream()
                 .findFirst()
                 .map(Choice::message)
-                .map(Message::content)
+                .map(Message<String>::content)
                 .orElse(null);
     }
 
-    public String transcribeAudio(Path audioFile){
+    public String transcribeAudio(Path audioFile) {
+        log.info("Transcribing audio file: " + audioFile.toFile().getName());
         MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
         bodyBuilder.part("file", new FileSystemResource(audioFile))
                 .header("Content-Type", "audio/mpeg");
@@ -75,7 +80,7 @@ public class OpenAiService {
         }
         return Optional.of(completion)
                 .map(stringObject -> mapToObject(stringObject, responseClass))
-                .orElse( null);
+                .orElse(null);
     }
 
     public <T> List<T> getCompletionList(String systemPrompt, String userMessage, Class<T> responseItemClass) {
@@ -102,7 +107,27 @@ public class OpenAiService {
                 .block();
     }
 
-    private  <T> T mapToObject(String value, Class<T> responseClass){
+    public String workWithImage(String prompt, File file) {
+        ChatRequest imageRequest = getImageRequest(prompt, file, objectMapper);
+        ChatResponse response = openaiWebClient.post()
+                .uri("/chat/completions")
+                .bodyValue(imageRequest)
+                .retrieve()
+                .bodyToMono(ChatResponse.class)
+                .timeout(ofSeconds(100))
+                .block();
+
+        return Optional.ofNullable(response)
+                .map(ChatResponse::choices)
+                .orElse(Collections.emptyList())
+                .stream()
+                .findFirst()
+                .map(Choice::message)
+                .map(Message<String>::content)
+                .orElse(null);
+    }
+
+    private <T> T mapToObject(String value, Class<T> responseClass) {
         try {
             return objectMapper.readValue(value, responseClass);
         } catch (JsonProcessingException e) {
@@ -111,7 +136,7 @@ public class OpenAiService {
         }
     }
 
-    private  <T> List<T> mapToList(String value, Class<T> responseItemClass){
+    private <T> List<T> mapToList(String value, Class<T> responseItemClass) {
         try {
             return objectMapper.readValue(value, objectMapper.getTypeFactory().constructCollectionType(List.class, responseItemClass));
         } catch (JsonProcessingException e) {
@@ -128,5 +153,52 @@ public class OpenAiService {
                         Message.builder().role("user").content(userMessage).build()
                 ))
                 .build();
+    }
+
+    private static ChatRequest getImageRequest(String prompt, File file, ObjectMapper objectMapper) {
+        try {
+            List<ImageContent> imageMessage = List.of(ImageContent.builder()
+                    .type("image_url")
+                    .imageUrl(ImageUrl.builder()
+                            .detail("auto")
+                            .url(convertToDataUrl(file))
+                            .build())
+                    .build());
+            ChatRequest build = ChatRequest.builder()
+                    .model("gpt-4o-mini")
+                    .messages(List.of(
+                            Message.builder().role("system").content(prompt).build(),
+                            Message.builder().role("user").content(imageMessage).build()
+                    ))
+                    .build();
+            System.out.println("Image request: " + objectMapper.writeValueAsString(build));
+            return build;
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Error converting image to data URL", e);
+            throw new RuntimeException("Failed to convert image to data URL", e);
+        }
+    }
+
+    private static String convertToDataUrl(File imageFile) throws IOException {
+        String extension = Optional.of(imageFile.getName())
+                .filter(name -> name.contains("."))
+                .map(name -> name.substring(name.lastIndexOf(".") + 1).toLowerCase())
+                .orElseThrow(() -> new IllegalArgumentException("No file extension found"));
+
+        String mimeType = getMimeType(extension);
+        byte[] imageBytes = Files.readAllBytes(imageFile.toPath());
+        String base64 = Base64.getEncoder().encodeToString(imageBytes);
+
+        return String.format("data:%s;base64,%s", mimeType, base64);
+    }
+
+    private static String getMimeType(String extension) {
+        return switch (extension) {
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "png" -> "image/png";
+            case "gif" -> "image/gif";
+            case "webp" -> "image/webp";
+            default -> throw new IllegalArgumentException("Unsupported image format: " + extension);
+        };
     }
 }

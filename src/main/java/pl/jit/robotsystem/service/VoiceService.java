@@ -94,15 +94,12 @@ public class VoiceService implements No5Action {
 
     private String transcribeAndSave(File audioFile, Path transcriptionPath) {
         try {
-            log.info("Transcribing file: " + audioFile.getName());
-
             String fileName = audioFile.getName();
             String baseName = fileName.contains(".")
                     ? fileName.substring(0, fileName.lastIndexOf('.'))
                     : fileName;
 
             String transcription = openAiService.transcribeAudio(audioFile.toPath());
-
             String fullContent = String.format("# Transkrypcja przesłuchania %s\n%s",
                     baseName, transcription);
             Files.writeString(transcriptionPath, fullContent);
