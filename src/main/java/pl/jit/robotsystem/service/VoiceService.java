@@ -48,7 +48,7 @@ public class VoiceService implements No5Action {
         String allTranscriptions = voiceList.stream()
                 .map(this::getTranscription)
                 .collect(Collectors.joining("\n\n"));
-        log.info("Collected all transcriptions:\n\n"+allTranscriptions);
+        log.info("Collected all transcriptions:\n\n" + allTranscriptions);
 
         log.info("Analyze transcriptions to get exact location");
         String prompt = promptRepository.getPromptData("s02e01-detective");
@@ -57,7 +57,7 @@ public class VoiceService implements No5Action {
 
         log.info("cleaning data...");
         response = ThinkingRemover.removeThinkingProcess(response);
-        log.info(" - cleaned: "+response);
+        log.info(" - cleaned: " + response);
 
         log.info("sending response to c3ntrala...");
         c3ntralaService.report("mp3", response, String.class)

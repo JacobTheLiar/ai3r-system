@@ -108,7 +108,7 @@ public class OpenAiService {
     }
 
     public String workWithImage(String prompt, File file) {
-        ChatRequest imageRequest = getImageRequest(prompt, file, objectMapper);
+        ChatRequest imageRequest = getImageRequest(prompt, file);
         ChatResponse response = openaiWebClient.post()
                 .uri("/chat/completions")
                 .bodyValue(imageRequest)
@@ -155,7 +155,7 @@ public class OpenAiService {
                 .build();
     }
 
-    private static ChatRequest getImageRequest(String prompt, File file, ObjectMapper objectMapper) {
+    private static ChatRequest getImageRequest(String prompt, File file) {
         try {
             List<ImageContent> imageMessage = List.of(ImageContent.builder()
                     .type("image_url")
@@ -164,15 +164,13 @@ public class OpenAiService {
                             .url(convertToDataUrl(file))
                             .build())
                     .build());
-            ChatRequest build = ChatRequest.builder()
+            return ChatRequest.builder()
                     .model("gpt-4o-mini")
                     .messages(List.of(
                             Message.builder().role("system").content(prompt).build(),
                             Message.builder().role("user").content(imageMessage).build()
                     ))
                     .build();
-            System.out.println("Image request: " + objectMapper.writeValueAsString(build));
-            return build;
         } catch (IOException e) {
             log.log(Level.SEVERE, "Error converting image to data URL", e);
             throw new RuntimeException("Failed to convert image to data URL", e);

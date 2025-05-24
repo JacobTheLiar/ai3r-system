@@ -12,6 +12,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Optional;
@@ -73,6 +75,13 @@ public class C3ntralaService {
     public File downloadFile(String apiPath, String filename) {
 
         File downloadedFile = new File(workingDirectory, filename);
+
+        try {
+            Files.createDirectories(downloadedFile.toPath().getParent());
+        } catch (IOException e) {
+            log.severe("Error creating directories: " + e.getMessage());
+            throw new RuntimeException("Failed to create directory", e);
+        }
 
         if (downloadedFile.exists()) {
             log.info("Getting file [%s] from disk ...".formatted(filename));
