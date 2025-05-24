@@ -35,7 +35,7 @@ public class RobotIdService implements No5Action {
 
     private void processRobotDescription(RobotDescriptionResponse response) {
         log.info("Robot description: " + response.description);
-        String prompt = promptRepository.getPromptData("s03e03-robot-id")
+        String prompt = promptRepository.getPromptData("s02e03-robot-id")
                 .replace("{{zeznanie}}", response.description);
         log.info("Generating image with prompt:\n\n" + prompt+"\n\n");
 
