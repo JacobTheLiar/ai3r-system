@@ -27,6 +27,7 @@ import static pl.jit.robotsystem.configuration.DotenvConfiguration.AI3R_API_KEY;
 public class C3ntralaService {
 
     private final String DATA_URL = "/data/%s/%s";
+    private final String PUBLIC_DATA_URL = "/dane/%s";
     private final String REPORT_URL = "/report";
     private final WebClient webClient;
     private final String ai3rApiKey;
@@ -45,6 +46,32 @@ public class C3ntralaService {
         log.info("Retrieving data [%s] from c3entrala's API ...".formatted(filename));
         RESPONSE result = webClient.get()
                 .uri(DATA_URL.formatted(ai3rApiKey, filename))
+                .retrieve()
+                .bodyToMono(responseType)
+                .timeout(ofSeconds(10))
+                .block();
+        log.info("Retrieved data: %s".formatted(result));
+        return Optional.ofNullable(result);
+    }
+
+    public <RESPONSE> Optional<RESPONSE> getPublicData(String filename, Class<RESPONSE> responseType) {
+        log.info("Retrieving data [%s] from c3entrala's API ...".formatted(filename));
+        RESPONSE result = webClient.get()
+                .uri(PUBLIC_DATA_URL.formatted(filename))
+                .retrieve()
+                .bodyToMono(responseType)
+                .timeout(ofSeconds(10))
+                .block();
+        log.info("Retrieved data: %s".formatted(result));
+        return Optional.ofNullable(result);
+    }
+
+    public <RESPONSE, REQUEST> Optional<RESPONSE> postSpecialData(String endpoint, REQUEST body ,Class<RESPONSE> responseType) {
+        log.info("Retrieving special data from c3entrala's API ... ->" + endpoint);
+        log.info(" - body: %s".formatted(body));
+        RESPONSE result = webClient.post()
+                .uri(endpoint)
+                .bodyValue(body)
                 .retrieve()
                 .bodyToMono(responseType)
                 .timeout(ofSeconds(10))
