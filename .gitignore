@@ -33,3 +33,4 @@ build/
 .vscode/
 .env
 /working-directory/
+/tools/qdrant/storage/

@@ -68,7 +68,7 @@ public class C3ntralaService {
                 .bodyToMono(responseType)
                 .timeout(ofSeconds(10))
                 .block();
-        log.info("C3ntrala's response: " + response);
+        log.info("C3ntrala's response:\n" + response);
         return Optional.ofNullable(response);
     }
 

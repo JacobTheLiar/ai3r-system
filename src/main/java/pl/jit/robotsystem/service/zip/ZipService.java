@@ -39,7 +39,6 @@ public class ZipService {
         return unzipFile(zipFile, ".");
     }
 
-
     private Optional<File> extractEntry(ZipFile zip, ZipEntry entry, Path targetDir) {
         try {
             Path entryPath = targetDir.resolve(entry.getName());

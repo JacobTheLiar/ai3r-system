@@ -18,6 +18,7 @@ public class WebConfiguration {
     public static final String XYZ_URL = "https://xyz.ag3nts.org";
     public static final String C3NTRALA_URL = "https://c3ntrala.ag3nts.org";
     public static final String OLLAMA_URL = "http://localhost:11434/";
+    public static final String LOCAL_QDRANT_URL = "http://localhost:6333/collections/";
 
     @Bean("xyzApiClient")
     public WebClient webClient() {
@@ -45,5 +46,10 @@ public class WebConfiguration {
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + dotenv.get(OPENAI_API_KEY))
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
+    }
+
+    @Bean("localQdrantClient")
+    public WebClient qdrantClient(){
+        return WebClient.create(LOCAL_QDRANT_URL);
     }
 }
