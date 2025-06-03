@@ -4,7 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import pl.jit.robotsystem.service.ConnectionsService;
+import pl.jit.robotsystem.service.PhotosService;
 
 @SpringBootApplication
 public class SystemApplication {
@@ -14,7 +14,7 @@ public class SystemApplication {
     }
 
     @Bean
-    public CommandLineRunner run(ConnectionsService service) {
+    public CommandLineRunner run(PhotosService service) {
         return args -> {
             service.action();
             System.exit(0);

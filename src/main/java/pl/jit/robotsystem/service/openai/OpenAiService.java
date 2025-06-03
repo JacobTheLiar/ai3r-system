@@ -114,7 +114,7 @@ public class OpenAiService {
                 .bodyValue(imageRequest)
                 .retrieve()
                 .bodyToMono(ChatResponse.class)
-                .timeout(ofSeconds(100))
+                .timeout(ofSeconds(300))
                 .block();
 
         return Optional.ofNullable(response)

@@ -31,7 +31,11 @@ public class WebConfiguration {
 
     @Bean("c3ntralaApiClient")
     public WebClient c3ntralaClient() {
-        return WebClient.create(C3NTRALA_URL);
+        return WebClient.builder().codecs(config -> config
+                        .defaultCodecs()
+                        .maxInMemorySize(10 * 1024 * 1024)
+                ).baseUrl(C3NTRALA_URL)
+                .build();
     }
 
     @Bean("ollamaClient")
@@ -49,7 +53,7 @@ public class WebConfiguration {
     }
 
     @Bean("localQdrantClient")
-    public WebClient qdrantClient(){
+    public WebClient qdrantClient() {
         return WebClient.create(LOCAL_QDRANT_URL);
     }
 }

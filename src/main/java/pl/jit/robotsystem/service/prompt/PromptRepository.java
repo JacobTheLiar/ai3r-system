@@ -23,13 +23,13 @@ public class PromptRepository {
         if (resource.exists()) {
             try {
                 String prompt = Files.readString(resource.getFile().toPath());
-                log.info("Found prompt:\n<prompt-data name=\"%s\">\n%s\n<\\prompt-data>\n".formatted(promptName, prompt.trim()));
-                return new String(Files.readAllBytes(resource.getFile().toPath()));
+//                log.info("Found prompt:\n<prompt-data name=\"%s\">\n%s\n<\\prompt-data>\n".formatted(promptName, prompt.trim()));
+                log.info("Found prompt: "+promptName);
+                return prompt;
             } catch (IOException e) {
                 throw new ReadingPromptException(e);
             }
         }
         throw new PromptNotFoundException(promptName);
     }
-
 }
