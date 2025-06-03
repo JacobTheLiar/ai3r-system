@@ -36,9 +36,13 @@ public class OpenAiService {
     }
 
     public String getCompletion(String systemPrompt, String userMessage) {
+        return getCompletion(systemPrompt, userMessage, "gpt-4.1-mini");
+    }
+
+    public String getCompletion(String systemPrompt, String userMessage, String modelName) {
         ChatResponse response = openaiWebClient.post()
                 .uri("/chat/completions")
-                .bodyValue(getRequest(systemPrompt, userMessage))
+                .bodyValue(getRequest(systemPrompt, userMessage, modelName))
                 .retrieve()
                 .bodyToMono(ChatResponse.class)
                 .timeout(ofSeconds(100))
@@ -51,6 +55,17 @@ public class OpenAiService {
                 .findFirst()
                 .map(Choice::message)
                 .map(Message<String>::content)
+                .orElse(null);
+    }
+
+    public <T> T getCompletion(String systemPrompt, String userMessage, Class<T> responseClass) {
+        String completion = getCompletion(systemPrompt, userMessage);
+        if (responseClass.equals(String.class)) {
+            //noinspection unchecked
+            return (T) completion;
+        }
+        return Optional.of(completion)
+                .map(stringObject -> mapToObject(stringObject, responseClass))
                 .orElse(null);
     }
 
@@ -69,18 +84,6 @@ public class OpenAiService {
                 .bodyToMono(TranscriptionResponse.class)
                 .map(TranscriptionResponse::text)
                 .block();
-    }
-
-    @SuppressWarnings("unused")
-    public <T> T getCompletion(String systemPrompt, String userMessage, Class<T> responseClass) {
-        String completion = getCompletion(systemPrompt, userMessage);
-        if (responseClass.equals(String.class)) {
-            //noinspection unchecked
-            return (T) completion;
-        }
-        return Optional.of(completion)
-                .map(stringObject -> mapToObject(stringObject, responseClass))
-                .orElse(null);
     }
 
     public <T> List<T> getCompletionList(String systemPrompt, String userMessage, Class<T> responseItemClass) {
@@ -145,9 +148,9 @@ public class OpenAiService {
         }
     }
 
-    private static ChatRequest getRequest(String systemPrompt, String userMessage) {
+    private static ChatRequest getRequest(String systemPrompt, String userMessage, String model) {
         return ChatRequest.builder()
-                .model("gpt-4.1-mini")
+                .model(model)
                 .messages(List.of(
                         Message.builder().role("system").content(systemPrompt).build(),
                         Message.builder().role("user").content(userMessage).build()

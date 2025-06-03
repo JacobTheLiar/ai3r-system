@@ -34,3 +34,4 @@ build/
 .env
 /working-directory/
 /tools/qdrant/storage/
+/tools/neo4j/data/
