@@ -83,6 +83,11 @@
 			<artifactId>flexmark-all</artifactId>
 			<version>0.64.8</version>
 		</dependency>
+		<dependency>
+			<groupId>io.github.furstenheim</groupId>
+			<artifactId>copy_down</artifactId>
+			<version>1.1</version>
+		</dependency>
 		<!-- encrypted zips -->
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
