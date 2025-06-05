@@ -35,3 +35,5 @@ build/
 /working-directory/
 /tools/qdrant/storage/
 /tools/neo4j/data/
+/tools/webhook/node_modules/
+/tools/webhook/.env
