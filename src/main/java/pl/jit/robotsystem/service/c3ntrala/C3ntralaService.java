@@ -91,8 +91,12 @@ public class C3ntralaService {
         RESPONSE response = webClient.post()
                 .uri(REPORT_URL)
                 .bodyValue(censoredData)
-                .retrieve()
-                .bodyToMono(responseType)
+                .exchangeToMono(clientResponse -> {
+                    if (clientResponse.statusCode().isError()) {
+                        log.warning("Error response from c3ntrala: %s".formatted(clientResponse.statusCode()));
+                    }
+                    return clientResponse.bodyToMono(responseType);
+                })
                 .timeout(ofSeconds(10))
                 .block();
         log.info("C3ntrala's response:\n" + response);

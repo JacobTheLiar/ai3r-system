@@ -14,6 +14,7 @@ public class ThinkingRemover {
     public static String removeThinkingProcess(String message) {
         return Optional.ofNullable(message)
                 .map(msg -> THINKING_PATTERN.matcher(msg).replaceAll(""))
+                .map(String::trim)
                 .orElse("");
     }
 }

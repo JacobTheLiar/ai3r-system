@@ -35,6 +35,8 @@ public class WebConfiguration {
                         .defaultCodecs()
                         .maxInMemorySize(10 * 1024 * 1024)
                 ).baseUrl(C3NTRALA_URL)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 

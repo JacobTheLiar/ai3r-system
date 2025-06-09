@@ -4,7 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import pl.jit.robotsystem.service.SoftoService;
+import pl.jit.robotsystem.service.NotepadService;
 
 @SpringBootApplication
 public class SystemApplication {
@@ -14,7 +14,7 @@ public class SystemApplication {
     }
 
     @Bean
-    public CommandLineRunner run(SoftoService service) {
+    public CommandLineRunner run(NotepadService service) {
         return args -> {
             service.action();
             System.exit(0);
