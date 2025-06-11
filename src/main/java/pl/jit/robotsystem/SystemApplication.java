@@ -4,7 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import pl.jit.robotsystem.service.NotepadService;
+import pl.jit.robotsystem.service.PhoneService;
 
 @SpringBootApplication
 public class SystemApplication {
@@ -14,7 +14,7 @@ public class SystemApplication {
     }
 
     @Bean
-    public CommandLineRunner run(NotepadService service) {
+    public CommandLineRunner run(PhoneService service) {
         return args -> {
             service.action();
             System.exit(0);

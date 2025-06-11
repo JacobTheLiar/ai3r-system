@@ -1,10 +1,6 @@
 package pl.jit.robotsystem.service.openai;
 
-import lombok.Builder;
-
-@Builder
-public record Message<T>(
-        String role,
-        T content
-) {
+public interface Message<T> {
+    String role();
+    T content();
 }

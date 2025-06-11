@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import pl.jit.robotsystem.service.c3ntrala.C3ntralaService;
-import pl.jit.robotsystem.service.openai.Message;
+import pl.jit.robotsystem.service.openai.StringMessage;
 import pl.jit.robotsystem.service.zip.ZipService;
 import pl.jit.robotsystem.share.No5Action;
 
@@ -67,9 +67,9 @@ public class ResearchPrepareService implements No5Action {
     private Messages prepareMessages(String data, boolean valid) {
         return new Messages(
                 List.of(
-                        Message.<String>builder().role("system").content("You are a data validator. Return 1 for valid data, 0 for invalid data.").build(),
-                        Message.<String>builder().role("user").content(data).build(),
-                        Message.<String>builder().role("assistant").content(valid ? "1" : "0").build()
+                        StringMessage.builder().role("system").content("You are a data validator. Return 1 for valid data, 0 for invalid data.").build(),
+                        StringMessage.builder().role("user").content(data).build(),
+                        StringMessage.builder().role("assistant").content(valid ? "1" : "0").build()
                 )
         );
     }
@@ -100,7 +100,7 @@ public class ResearchPrepareService implements No5Action {
     }
 
     record Messages(
-            List<Message<String>> messages
+            List<StringMessage> messages
     ) {
     }
 }

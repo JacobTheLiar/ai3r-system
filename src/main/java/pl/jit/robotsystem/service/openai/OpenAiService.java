@@ -23,9 +23,15 @@ import java.util.logging.Level;
 
 import static java.time.Duration.ofSeconds;
 
+@SuppressWarnings("rawtypes")
 @Service
 @Log
 public class OpenAiService {
+
+    public static final String GPT_4_1_MINI = "gpt-4.1-mini";
+    public static final String DALL_E_3 = "dall-e-3";
+    public static final String GPT_4_O_MINI = "gpt-4o-mini";
+    public static final String GPT_3_5_TURBO = "gpt-3.5-turbo";
 
     private final WebClient openaiWebClient;
     private final ObjectMapper objectMapper;
@@ -36,7 +42,7 @@ public class OpenAiService {
     }
 
     public String getCompletion(String systemPrompt, String userMessage) {
-        return getCompletion(systemPrompt, userMessage, "gpt-4.1-mini");
+        return getCompletion(systemPrompt, userMessage, GPT_4_1_MINI);
     }
 
     public String getCompletion(String systemPrompt, String userMessage, String modelName) {
@@ -45,8 +51,9 @@ public class OpenAiService {
                 .bodyValue(getRequest(systemPrompt, userMessage, modelName))
                 .retrieve()
                 .bodyToMono(ChatResponse.class)
-                .timeout(ofSeconds(100))
+                .timeout(ofSeconds(300))
                 .block();
+
 
         return Optional.ofNullable(response)
                 .map(ChatResponse::choices)
@@ -54,7 +61,7 @@ public class OpenAiService {
                 .stream()
                 .findFirst()
                 .map(Choice::message)
-                .map(Message<String>::content)
+                .map(StringMessage::content)
                 .orElse(null);
     }
 
@@ -66,6 +73,25 @@ public class OpenAiService {
         }
         return Optional.of(completion)
                 .map(stringObject -> mapToObject(stringObject, responseClass))
+                .orElse(null);
+    }
+
+    public String getCompletion(List<Message> messages, String modelName) {
+        ChatResponse response = openaiWebClient.post()
+                .uri("/chat/completions")
+                .bodyValue(getRequest(messages, modelName))
+                .retrieve()
+                .bodyToMono(ChatResponse.class)
+                .timeout(ofSeconds(300))
+                .block();
+
+        return Optional.ofNullable(response)
+                .map(ChatResponse::choices)
+                .orElse(Collections.emptyList())
+                .stream()
+                .findFirst()
+                .map(Choice::message)
+                .map(StringMessage::content)
                 .orElse(null);
     }
 
@@ -98,7 +124,7 @@ public class OpenAiService {
                 .uri("/images/generations")
                 .bodyValue(ImageGenerationRequest.builder()
                         .prompt(prompt)
-                        .model("dall-e-3")
+                        .model(DALL_E_3)
                         .n(1)
                         .size("1024x1024")
                         .quality("hd")
@@ -106,7 +132,7 @@ public class OpenAiService {
                         .build())
                 .retrieve()
                 .bodyToMono(ImageGenerationResponse.class)
-                .timeout(ofSeconds(30))
+                .timeout(ofSeconds(300))
                 .block();
     }
 
@@ -126,7 +152,7 @@ public class OpenAiService {
                 .stream()
                 .findFirst()
                 .map(Choice::message)
-                .map(Message<String>::content)
+                .map(StringMessage::content)
                 .orElse(null);
     }
 
@@ -149,12 +175,19 @@ public class OpenAiService {
     }
 
     private static ChatRequest getRequest(String systemPrompt, String userMessage, String model) {
+        return getRequest(
+                List.of(
+                        StringMessage.builder().role("system").content(systemPrompt).build(),
+                        StringMessage.builder().role("user").content(userMessage).build()
+                ), model
+        );
+   }
+
+    private static ChatRequest getRequest(List<Message> messages, String model) {
         return ChatRequest.builder()
                 .model(model)
-                .messages(List.of(
-                        Message.builder().role("system").content(systemPrompt).build(),
-                        Message.builder().role("user").content(userMessage).build()
-                ))
+                .temperature(0.1)
+                .messages(messages)
                 .build();
     }
 
@@ -168,10 +201,10 @@ public class OpenAiService {
                             .build())
                     .build());
             return ChatRequest.builder()
-                    .model("gpt-4o-mini")
+                    .model(GPT_4_O_MINI)
                     .messages(List.of(
-                            Message.builder().role("system").content(prompt).build(),
-                            Message.builder().role("user").content(imageMessage).build()
+                            StringMessage.builder().role("system").content(prompt).build(),
+                            ImageMessage.builder().role("user").content(imageMessage).build()
                     ))
                     .build();
         } catch (IOException e) {
