@@ -4,7 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import pl.jit.robotsystem.service.PhoneService;
+import pl.jit.robotsystem.service.GpsService;
 
 @SpringBootApplication
 public class SystemApplication {
@@ -14,7 +14,7 @@ public class SystemApplication {
     }
 
     @Bean
-    public CommandLineRunner run(PhoneService service) {
+    public CommandLineRunner run(GpsService service) {
         return args -> {
             service.action();
             System.exit(0);
